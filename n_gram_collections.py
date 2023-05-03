@@ -2,13 +2,16 @@ import re
 import bs4
 from urllib.request import urlopen
 from bs4 import BeautifulSoup as bs
+from collections import defaultdict
 from pprint import pprint
 
 
-def getNgrams(content, n):
+def getNgrams(content, n, counter=None):
     content = re.split(r'\s+', content)
-    content = [content[i:i+n] for i in range(len(content)-n+1)]
-    return content
+    ngram = defaultdict(int) if counter is None else counter
+    for i in range(len(content)-n+1):
+        ngram[tuple(content[i:i+n])] += 1
+    return ngram
 
 
 def getSemiSentence(content):
@@ -22,16 +25,17 @@ def getSentence(content):
     return content
     
 
-def getParagraph(paragragh, n_gram=2):
+def getParagraph(paragragh, n_gram=2, counter=None):
     for sentence in getSentence(paragragh):
         for semisentence in getSemiSentence(sentence):
-            yield getNgrams(semisentence, n_gram)
+            yield getNgrams(semisentence, n_gram, counter)
 
 
+counter = defaultdict(int)
 url = 'http://en.wikipedia.org/wiki/Python_(programming_language)'
 root = bs(urlopen(url), 'html.parser')
 content = root.find('table', {'class': 'infobox vevent'}).nextSibling
 for p in content.find_next_siblings('p')[:4]:
-    print(p.get_text(), end='\n\n')
-    for result in getParagraph(p.get_text(), 2):
-        pprint(result)
+    for result in getParagraph(p.get_text(), 2, counter):
+        continue
+pprint(counter)

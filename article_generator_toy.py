@@ -106,7 +106,10 @@ def fake_article(lookup_table, sentences=10):
         if next_word == '.': # meet the end of a sentence
             number += 1
 
-    paragraph = ' '.join(words)
+    # form fake paragraph
+    paragraph = ''
+    for word in words:
+        paragraph += ' ' + word if word not in {',', '.'} else word
     return paragraph
     
 
